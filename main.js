@@ -8,7 +8,10 @@ let current = null;
 const bAdd = document.querySelector('#bAdd');
 const itTask = document.querySelector('#itTask');
 const form = document.querySelector('#form');
+const taskName = document.querySelector('#time #taskName');
 
+renderTime();
+renderTask();
 
 form.addEventListener('submit', e => {
     e.preventDefault();
@@ -43,6 +46,74 @@ function renderTask(){
     const tasksContainer = document.querySelector('#tasks');
     tasksContainer.innerHTML = html.join('');
 
+    const startButtons = document.querySelectorAll('.task .start-button');
+    startButtons.forEach(button => {
+        button.addEventListener('click', e => {
+            if (!timer){
+                const id = button.getAttribute('data-id');
+                startButtonHandler(id);
+                button.textContent = 'In progress...'
+            }
+        })
+    });
 
 }
 
+function startButtonHandler(id){
+    time = 5;
+    current = id;
+    const taskIndex = tasks.findIndex(task => task.id === id );
+    taskName.textContent = tasks[taskIndex].title;
+    renderTime();
+    timer = setInterval(() => {
+        timeHandler(id);
+    }, 1000)
+
+}
+function timeHandler(id){
+    time--;
+    renderTime();
+    if (time === 0 ){
+        clearInterval(timer);
+        markCompleted(id);
+        timer = null;
+        renderTask();
+        startBreak();
+    }
+}
+
+function startBreak(){
+    time = 3;
+    taskName.textContent = 'Break';
+    renderTime();
+    timerBreak= setInterval(() => {
+        timerBreakhandler();
+    },1000);
+}
+
+function timerBreakhandler(){
+    time--;
+    renderTime();
+    if (time === 0 ){
+        clearInterval(timerBreak);
+        current = null;
+        timerBreak = null;
+        taskName.textContent = '';
+        renderTask();
+    }
+
+}
+
+function renderTime(){
+    const timeDiv = document.querySelector('#time #value');
+    const minutes = parseInt(time / 60 );
+    const second = parseInt(time % 60);
+
+    timeDiv.textContent = `${minutes < 10 ? '0' : ''}${minutes}:${second < 10 ? '0' : ''}${second}`;
+
+}
+
+function markCompleted(id){
+    const taskIndex = tasks.findIndex((task) => task.id === id);
+    tasks[taskIndex].completed = true;
+}
